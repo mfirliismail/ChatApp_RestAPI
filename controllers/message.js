@@ -100,10 +100,12 @@ module.exports = {
         const userId = req.user.id
         try {
             const findAllConversations = await Conversations.findAll({
-                where: { $or: { userOne: userId, userTwo: userId } },
-                include: {
-                    model: Users,
-                    attributes: ['id', 'fullname', 'email']
+                where: {
+                    [Op.or]: [{
+                        userOne: userId
+                    }, {
+                        userTwo: userId
+                    }]
                 },
                 order: [
                     ['createdAt', 'DESC'],
@@ -123,6 +125,7 @@ module.exports = {
             })
 
         } catch (error) {
+            console.log(error)
             return res.status(500).json({
                 status: "failed",
                 message: "internal server error"
@@ -132,6 +135,7 @@ module.exports = {
     getAllMessageInOneConversation: async(req, res) => {
         const userId = req.user.id
         const partner = req.params.partner
+
         try {
             const checkConver = await Conversations.findOne({
                 where: {
@@ -143,21 +147,6 @@ module.exports = {
                         userTwo: userId
                     }]
                 },
-                include: [{
-                    model: ConversationReply,
-                    attributes: ["id", "reply", "userId"],
-                    include: {
-                        model: Users,
-                        attributes: ['id', 'fullname', 'email']
-                    },
-                    order: [
-                        ['createdAt', 'DESC'],
-                    ]
-                }],
-                include: {
-                    model: Users,
-                    attributes: ['id', 'fullname', 'email']
-                }
             })
 
             if (!checkConver) {
@@ -167,10 +156,23 @@ module.exports = {
                 })
             }
 
+            const findAllMessage = await ConversationReply.findAll({
+                where: {
+                    conversationId: checkConver.dataValues.id
+                },
+                include: {
+                    model: Users,
+                    attributes: ["id", "fullname", "email"]
+                },
+                order: [
+                    ['createdAt', 'DESC'],
+                ]
+            })
+
             return res.status(200).json({
                 status: "success",
                 message: "success retrieved data",
-                data: checkConver
+                data: findAllMessage
             })
         } catch (error) {
             return res.status(500).json({
