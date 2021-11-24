@@ -5,7 +5,7 @@ const supertest = require('supertest')
 test("POST /api/v1/users/signup", async() => {
     const data = {
         fullname: "mamang udin",
-        email: "mamang2@gmail.com",
+        email: "mamang6@gmail.com",
         password: "password"
     }
     await supertest(app)
@@ -19,7 +19,7 @@ test("POST /api/v1/users/signup", async() => {
 
 test("POST /api/v1/users/login", async() => {
     const login = {
-        email: "mamang2@gmail.com",
+        email: "mamang4@gmail.com",
         password: "password"
     }
 
