@@ -25,7 +25,9 @@ module.exports = {
                 })
             }
             const checkEmail = await Users.findOne({
-                email: body.email
+                where: {
+                    email: body.email
+                }
             })
             if (checkEmail) {
                 return res.status(400).json({
@@ -63,7 +65,6 @@ module.exports = {
         const body = req.body
         try {
             const Schema = joi.object({
-                fullname: joi.string().min(5).required(),
                 email: joi.string().email().required(),
                 password: joi.string().min(6).required()
             })
@@ -78,7 +79,9 @@ module.exports = {
             }
 
             const checkEmail = await Users.findOne({
-                email: email
+                where: {
+                    email: body.email
+                }
             });
 
             if (!checkEmail) {
@@ -88,7 +91,7 @@ module.exports = {
                 });
             }
             const checkPassword = await bcrypt.compare(body.password,
-                checkEmail.password);
+                checkEmail.dataValues.password);
 
             if (!checkPassword) {
                 return res.status(400).json({
@@ -97,19 +100,25 @@ module.exports = {
                 });
             }
             const payload = {
-                email: checkEmail.email,
-                id: checkEmail._id,
+                email: checkEmail.dataValues.email,
+                id: checkEmail.dataValues.id,
             };
 
             jwt.sign(payload, process.env.PWD_TOKEN, { expiresIn: 3600 * 24 }, (err, token) => {
+                if (err) {
+                    console.log(err)
+                    return res.status(400).json
+                }
+
                 return res.status(200).json({
                     status: "success",
                     message: "Logged in successfully",
-                    data: token,
+                    data: token
                 });
             });
 
         } catch (error) {
+            console.log(error)
             return res.status(500).json({
                 status: "failed",
                 message: "internal server error"
